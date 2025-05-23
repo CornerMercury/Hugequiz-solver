@@ -7,7 +7,7 @@ from math import radians, sin, cos, sqrt, atan2
 RANGE = 25_000_000
 ACCOUNT_FOR_PREFIXES = True
 
-CSV = "world50kcities.csv"
+CSV = "worldcitiescont.csv"
 
 SOLVER = pulp.PULP_CBC_CMD
 # SOLVER = pulp.GUROBI_CMD
