@@ -2,15 +2,26 @@ import csv
 from collections import defaultdict
 import pulp
 from math import radians, sin, cos, sqrt, atan2
+from enum import Enum
+
+class QuizType(Enum):
+    LATITUDE=1
+    LONGITUDE=2
+    CIRCLE=3
+    POPULATION=4
 
 # Range in lat/long or radius (km) or max population
-RANGE = 25_000_000
+RANGE = 5
+TYPE = QuizType.LATITUDE
+# Much slower but accounts for prefixes with cities (i.e) "sur" and "surgut",
+# without this enabled it will assume that when you type "surgut", it will not have to type "sursurgut" due to "sur" being use up
 ACCOUNT_FOR_PREFIXES = True
+SOLVER_LOGS = False
 
 CSV = "worldcitiescont.csv"
 
 SOLVER = pulp.PULP_CBC_CMD
-# SOLVER = pulp.GUROBI_CMD
+SOLVER = pulp.GUROBI_CMD
 
 def normalize(name):
     return name.replace("_", "").strip().lower()
@@ -37,7 +48,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
     return R * c
 
-def create_circle_name_coverage(city_list, name_to_city_indices):
+def create_circle_coverage(city_list, name_to_city_indices):
     name_coverage = defaultdict(set)
     for name, indices_with_name in name_to_city_indices.items():
         for i in range(len(city_list)):
@@ -50,7 +61,7 @@ def create_circle_name_coverage(city_list, name_to_city_indices):
 
     return name_coverage
 
-def create_lat_long_coverage(city_list, name_to_city_indices, direction):
+def create_lat_lon_coverage(city_list, name_to_city_indices, direction):
     merged_intervals = {}
     for name, indices in name_to_city_indices.items():
         # Create intervals for each city with this name
@@ -145,9 +156,17 @@ def main():
             name_to_city_indices[name].append(i)
 
     # Determine coverage
-    # name_coverage = create_circle_name_coverage(city_list, name_to_city_indices)
-    # name_coverage = create_lat_long_coverage(city_list, name_to_city_indices, 'lon')
-    name_coverage = create_pop_coverage(city_list, name_to_city_indices)
+    match TYPE:
+        case QuizType.LATITUDE:
+            name_coverage = create_lat_lon_coverage(city_list, name_to_city_indices, 'lat')
+        case QuizType.LONGITUDE:
+            name_coverage = create_lat_lon_coverage(city_list, name_to_city_indices, 'lon')
+        case QuizType.CIRCLE:
+            name_coverage = create_circle_coverage(city_list, name_to_city_indices)
+        case QuizType.POPULATION:
+            name_coverage = create_pop_coverage(city_list, name_to_city_indices)
+        case _:
+            print("Not a valid quiz type")
 
     # All names to consider
     names = list(name_coverage.keys())
@@ -182,7 +201,7 @@ def main():
 
     # Solve the ILP
     print("Solving...")
-    prob.solve(SOLVER(msg=False))
+    prob.solve(SOLVER(msg=SOLVER_LOGS))
 
     # Check for optimality
     if pulp.LpStatus[prob.status] != 'Optimal':

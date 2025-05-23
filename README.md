@@ -4,6 +4,8 @@ A linear programming solution to find the smallest number of characters to solve
 
 ## Usage
 
+-   I recommend using pypy, especially for population coverage to speed it up
+
 ### Install Requirements
 
 ```sh
