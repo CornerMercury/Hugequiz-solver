@@ -15,3 +15,4 @@ pip install -r requirements.txt
 ### Edit Constants
 
 -   At the top of the generic_solver.py file change the constants to your liking
+-   Edit the continent filter if needed in the get_data function list comprehension
