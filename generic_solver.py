@@ -11,8 +11,8 @@ class QuizType(Enum):
     POPULATION=4
 
 # Range in lat/long or radius (km) or max population
-RANGE = 5
-TYPE = QuizType.LATITUDE
+RANGE = 500
+TYPE = QuizType.CIRCLE
 # Much slower but accounts for prefixes with cities (i.e) "sur" and "surgut",
 # without this enabled it will assume that when you type "surgut", it will not have to type "sursurgut" due to "sur" being use up
 ACCOUNT_FOR_PREFIXES = True
@@ -21,7 +21,7 @@ SOLVER_LOGS = False
 CSV = "worldcitiescont.csv"
 
 SOLVER = pulp.PULP_CBC_CMD
-SOLVER = pulp.GUROBI_CMD
+# SOLVER = pulp.GUROBI_CMD
 
 def normalize(name):
     return name.replace("_", "").strip().lower()
